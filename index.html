@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.5/dist/ffmpeg.min.js"></script>
+</head>
+<body>
+
+<script>
+  const { createFFmpeg } = FFmpeg;
+const { createFFmpeg, fetchFile } = FFmpeg;
+const ffmpeg = createFFmpeg({ log: true });
+
+(async () => {
+    await ffmpeg.load();
+    
+    const dataInputVideo = await fetchFile('bj.mp4');
+    const dataInputAudio = await fetchFile('record.mp3');
+
+    ffmpeg.FS('writeFile', 'bj.mp4', dataInputVideo);
+    ffmpeg.FS('writeFile', 'record.mp3', dataInputAudio);
+    
+    // ffmpeg -i video.mp4 -i audio.wav -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 output.mp4
+    await ffmpeg.run('-i', 'bj.mp4', '-i', 'record.mp3', '-c:v', 'copy', '-c:a', 'aac', '-strict', 'experimental', '-map', '0:v:0', '-map', '1:a:0', 'output.mp4');
+    
+    const data = ffmpeg.FS('readFile', 'output.mp4');
+    const video = document.getElementById('player');
+    video.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+})();
+</script>
+
+</body>
+</html>
